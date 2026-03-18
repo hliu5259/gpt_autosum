@@ -1,0 +1,29 @@
+{
+  "manifest_version": 3,
+  "name": "ChatGPT Conversation Archiver",
+  "version": "0.1.0",
+  "description": "Track and archive selected ChatGPT conversations locally.",
+  "permissions": ["storage", "activeTab", "tabs"],
+  "action": {
+    "default_popup": "src/popup/index.html",
+    "default_icon": "public/icon48.png"
+  },
+  "background": {
+    "service_worker": "src/background/index.ts"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://chatgpt.com/*",
+        "https://chat.openai.com/*"
+      ],
+      "js": ["src/content/index.ts"],
+      "run_at": "document_idle"
+    }
+  ],
+  "icons": {
+    "16": "public/icon16.png",
+    "48": "public/icon48.png",
+    "128": "public/icon128.png"
+  }
+}
