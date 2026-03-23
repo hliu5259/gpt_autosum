@@ -22,6 +22,37 @@ export interface PageContext {
   origin: string;
 }
 
+/** A single message in a conversation */
+export interface ConversationMessage {
+  role: "user" | "assistant" | "system";
+  content: string;
+}
+
+/** Full snapshot stored in IndexedDB */
+export interface ConversationSnapshot {
+  id?: number;
+  conversationId: string;
+  title: string;
+  capturedAt: number;
+  messages: ConversationMessage[];
+}
+
+/** Message types for communication between content <-> background <-> popup */
+export type Message =
+  | { type: "CONTENT_READY"; url: string }
+  | { type: "CAPTURE_REQUEST"; conversationId: string }
+  | {
+      type: "CAPTURE_RESULT";
+      conversationId: string;
+      title: string;
+      messages: ConversationMessage[];
+    }
+  | { type: "GET_SNAPSHOTS"; conversationId: string }
+  | { type: "SNAPSHOTS_RESULT"; snapshots: ConversationSnapshot[] }
+  | { type: "DELETE_SNAPSHOTS"; conversationId: string }
+  | { type: "GET_ALL_SNAPSHOTS" }
+  | { type: "ALL_SNAPSHOTS_RESULT"; snapshots: ConversationSnapshot[] };
+
 /** Storage keys used in chrome.storage.local */
 export const STORAGE_KEYS = {
   TRACKED_CONVERSATIONS: "tracked_conversations",

@@ -1,36 +1,48 @@
-/**
- * Local DB layer stub.
- *
- * This module will eventually use IndexedDB (via Dexie or idb) to store
- * full conversation snapshots and message-level data. For now it's a
- * placeholder that logs calls and resolves immediately.
- */
+import Dexie, { type Table } from "dexie";
+import type { ConversationSnapshot } from "@shared/types";
 
-export interface ConversationSnapshot {
-  conversationId: string;
-  capturedAt: number;
-  /** Raw HTML or structured data — TBD */
-  payload: unknown;
+class ArchiveDB extends Dexie {
+  snapshots!: Table<ConversationSnapshot, number>;
+
+  constructor() {
+    super("ConversationArchiveDB");
+    this.version(1).stores({
+      snapshots: "++id, conversationId, capturedAt",
+    });
+  }
 }
 
-/** Stub: save a conversation snapshot */
+const db = new ArchiveDB();
+
+/** Save a conversation snapshot */
 export async function saveSnapshot(
-  _snapshot: ConversationSnapshot
-): Promise<void> {
-  console.log("[db stub] saveSnapshot called", _snapshot.conversationId);
+  snapshot: Omit<ConversationSnapshot, "id">
+): Promise<number> {
+  return db.snapshots.add(snapshot as ConversationSnapshot);
 }
 
-/** Stub: get all snapshots for a conversation */
+/** Get all snapshots for a conversation, newest first */
 export async function getSnapshots(
-  _conversationId: string
+  conversationId: string
 ): Promise<ConversationSnapshot[]> {
-  console.log("[db stub] getSnapshots called", _conversationId);
-  return [];
+  return db.snapshots
+    .where("conversationId")
+    .equals(conversationId)
+    .reverse()
+    .sortBy("capturedAt");
 }
 
-/** Stub: delete all snapshots for a conversation */
-export async function deleteSnapshots(
-  _conversationId: string
-): Promise<void> {
-  console.log("[db stub] deleteSnapshots called", _conversationId);
+/** Get all snapshots across all conversations, newest first */
+export async function getAllSnapshots(): Promise<ConversationSnapshot[]> {
+  return db.snapshots.orderBy("capturedAt").reverse().toArray();
+}
+
+/** Delete all snapshots for a conversation */
+export async function deleteSnapshots(conversationId: string): Promise<void> {
+  await db.snapshots.where("conversationId").equals(conversationId).delete();
+}
+
+/** Delete a single snapshot by id */
+export async function deleteSnapshot(id: number): Promise<void> {
+  await db.snapshots.delete(id);
 }
