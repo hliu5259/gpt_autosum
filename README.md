@@ -2,7 +2,16 @@
 
 A Chrome extension that lets you track and archive selected ChatGPT conversations locally.
 
-**Status:** MVP Phase 1 — project skeleton with popup UI and tracking.
+**Status:** Feature-complete (Phase 1–4 implemented)
+
+## Features
+
+- **Track conversations** — detect and track ChatGPT conversations from the popup
+- **Capture snapshots** — capture the full conversation content from the page DOM on demand
+- **IndexedDB storage** — snapshots are stored locally via Dexie (IndexedDB)
+- **Export** — download snapshots as JSON or Markdown
+- **Search** — filter tracked conversations by title or ID
+- **Manage** — view, expand, and delete snapshots per conversation
 
 ## Setup
 
@@ -37,23 +46,18 @@ Starts Vite dev server with HMR (via crxjs). After starting, load the `dist/` fo
 
 ```
 src/
-  background/   - Service worker (message handling, future capture coordination)
-  content/      - Content script injected into ChatGPT pages
-  popup/        - React popup UI (tab detection, track/stop controls)
-  archive/      - DB layer stub (future IndexedDB/Dexie storage)
+  background/   - Service worker (message routing, DB operations)
+  content/      - Content script (DOM scraping for conversation capture)
+  popup/        - React popup UI (track, capture, search, export)
+  archive/      - Dexie DB layer + export helpers
   shared/       - Types, storage helpers, page context parsing
 ```
 
-## What Works (Phase 1)
+## How It Works
 
-- Popup detects whether the active tab is on chatgpt.com or chat.openai.com
-- Extracts conversation ID from URL
-- Track / Stop buttons persist conversation IDs via `chrome.storage.local`
-- Lists all tracked conversations in popup
-- Content script and background service worker stubs are in place
-
-## Next Steps
-
-- Phase 2: DOM observation and conversation capture pipeline
-- Phase 3: IndexedDB storage via Dexie for full conversation snapshots
-- Phase 4: Export / search / management UI
+1. **Popup** detects whether the active tab is on chatgpt.com/chat.openai.com
+2. User clicks **Track** to start tracking a conversation
+3. User clicks **Capture** to snapshot the current conversation content
+4. Content script scrapes messages from the ChatGPT DOM
+5. Background worker saves the snapshot to IndexedDB
+6. User can expand tracked conversations to see snapshots, export, or delete them
